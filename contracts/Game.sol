@@ -17,7 +17,6 @@ contract Game {
     IProxyFee public proxyFee;
     IRelationship public relationship;
 
-
     enum GameStatus {
         NONE,
         RUNNING,
@@ -42,7 +41,6 @@ contract Game {
         _;
     }
 
-
     constructor(address tokenContract_, address storage_, address proxyFee_, address relationship_, address proxy_){
         tokenContract = tokenContract_;
         gameStorage = IGameStorage(storage_);
@@ -53,7 +51,6 @@ contract Game {
         require(relationship.isProxy(proxy), "Check proxy error");
         require(gameStorage.isStorage(), "Check storage error");
     }
-
 
     struct NewGameVars {
         uint startTime;
@@ -84,7 +81,6 @@ contract Game {
         proxyFee.payNewGame(msg.sender);
 
         emit GameCreated(gameHash, name, uint(GameStatus.RUNNING), feeRate);
-        return gameHash;
     }
 
     struct CancelGameVars {
@@ -150,6 +146,11 @@ contract Game {
 
         (vars.option1Amount, vars.option2Amount,,) = gameStorage.getGameVote(gameHash);
 
+        //If one option bet amount is 0, the win or loss cannot be calculated
+        require(vars.option1Amount > 0, "Option 1 total bet amount is 0");
+
+        require(vars.option2Amount > 0, "Option 2 total bet amount is 0");
+
         //Option1 win
         if (result == uint(GameResult.OPTION1)) {
 
@@ -172,7 +173,9 @@ contract Game {
 
         doTransferOut(vars.agent, vars.agentFee);
         doTransferOut(vars.platform, vars.platformFee);
+
         gameStorage.setGameResult(gameHash, uint(GameStatus.ENDED), vars.result);
+
         emit GameResultSubmitted(gameHash, vars.name, vars.fee, vars.agentFee, vars.platformFee, vars.option1Amount, vars.option2Amount, uint(GameStatus.ENDED), vars.result);
     }
 
@@ -188,11 +191,9 @@ contract Game {
         platformFee = fee.sub(agentFee);
     }
 
-
     function getGameHash(uint name) public view returns (bytes32){
         return sha256(abi.encodePacked(address(this), name));
     }
-
 
     struct PlayGameVars {
         bool verify;
