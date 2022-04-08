@@ -1,0 +1,243 @@
+{
+  "contractName": "IProxyFee",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "proxy",
+          "type": "address"
+        }
+      ],
+      "name": "payNewGame",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "metadata": "{\"compiler\":{\"version\":\"0.8.0+commit.c7dfd78e\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"proxy\",\"type\":\"address\"}],\"name\":\"payNewGame\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/Users/drunken/work/kpc/contracts/IProxyFee.sol\":\"IProxyFee\"},\"evmVersion\":\"byzantium\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/drunken/work/kpc/contracts/IProxyFee.sol\":{\"keccak256\":\"0xa06a980856a09f77b2d77a9d40f4bb1e02c04f0d39408ee92ad1ab95e17ea65b\",\"license\":\"GPL-3.0\",\"urls\":[\"bzz-raw://7d81604ad233c7becc13fc462f757eca84fc90657ec4dc435fdab3f90950c8b6\",\"dweb:/ipfs/QmbAYvSmBouzLgBpBUyNZrk74HA6yL3GZoQZXRKtxD5X9t\"]}},\"version\":1}",
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "immutableReferences": {},
+  "generatedSources": [],
+  "deployedGeneratedSources": [],
+  "sourceMap": "",
+  "deployedSourceMap": "",
+  "source": "// SPDX-License-Identifier: GPL-3.0\n\npragma solidity >=0.5.16 <0.9.0;\n\ninterface IProxyFee {\n    function payNewGame(address proxy) external;\n}",
+  "sourcePath": "/Users/drunken/work/kpc/contracts/IProxyFee.sol",
+  "ast": {
+    "absolutePath": "/Users/drunken/work/kpc/contracts/IProxyFee.sol",
+    "exportedSymbols": {
+      "IProxyFee": [
+        2554
+      ]
+    },
+    "id": 2555,
+    "license": "GPL-3.0",
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 2548,
+        "literals": [
+          "solidity",
+          ">=",
+          "0.5",
+          ".16",
+          "<",
+          "0.9",
+          ".0"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "37:32:5"
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "fullyImplemented": false,
+        "id": 2554,
+        "linearizedBaseContracts": [
+          2554
+        ],
+        "name": "IProxyFee",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "functionSelector": "3313ff00",
+            "id": 2553,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "payNewGame",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 2551,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 2550,
+                  "mutability": "mutable",
+                  "name": "proxy",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 2553,
+                  "src": "117:13:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 2549,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "117:7:5",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "116:15:5"
+            },
+            "returnParameters": {
+              "id": 2552,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "140:0:5"
+            },
+            "scope": 2554,
+            "src": "97:44:5",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "scope": 2555,
+        "src": "71:72:5"
+      }
+    ],
+    "src": "37:106:5"
+  },
+  "legacyAST": {
+    "absolutePath": "/Users/drunken/work/kpc/contracts/IProxyFee.sol",
+    "exportedSymbols": {
+      "IProxyFee": [
+        2554
+      ]
+    },
+    "id": 2555,
+    "license": "GPL-3.0",
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 2548,
+        "literals": [
+          "solidity",
+          ">=",
+          "0.5",
+          ".16",
+          "<",
+          "0.9",
+          ".0"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "37:32:5"
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "fullyImplemented": false,
+        "id": 2554,
+        "linearizedBaseContracts": [
+          2554
+        ],
+        "name": "IProxyFee",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "functionSelector": "3313ff00",
+            "id": 2553,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "payNewGame",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 2551,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 2550,
+                  "mutability": "mutable",
+                  "name": "proxy",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 2553,
+                  "src": "117:13:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 2549,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "117:7:5",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "116:15:5"
+            },
+            "returnParameters": {
+              "id": 2552,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "140:0:5"
+            },
+            "scope": 2554,
+            "src": "97:44:5",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "scope": 2555,
+        "src": "71:72:5"
+      }
+    ],
+    "src": "37:106:5"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.8.0+commit.c7dfd78e.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.4.1",
+  "updatedAt": "2022-04-08T07:10:56.577Z",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  }
+}
