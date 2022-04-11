@@ -143,7 +143,7 @@ contract Game {
 
 
         /* Generate game hash based on game name */
-        gameHash = sha256(abi.encodePacked(address(this), name));
+        gameHash = _storage.getGameHash(name);
 
 
         NewGameVars memory vars;
@@ -301,13 +301,6 @@ contract Game {
         platformFee = fee.sub(agentFee);
     }
 
-    /**
-     * @notice Calculate game hash based on game name
-     * @param name Total game name
-     */
-    function getGameHash(uint name) public view returns (bytes32){
-        return sha256(abi.encodePacked(address(this), name));
-    }
 
     struct PlayGameVars {
         bool verify;
