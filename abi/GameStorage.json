@@ -397,7 +397,7 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "index",
+        "name": "name",
         "type": "uint256"
       }
     ],

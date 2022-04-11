@@ -72,7 +72,7 @@ contract PlatformGame is Ownable{
     constructor(address tokenContract_, address storage_){
         tokenContract = tokenContract_;
         _storage = IGameStorage(storage_);
-        
+
         /* Check whether the storage contract address is legal */
         require(_storage.isStorage(), "Check storage error");
     }
@@ -112,7 +112,7 @@ contract PlatformGame is Ownable{
 
 
         /* Generate game hash based on game name */
-        gameHash = sha256(abi.encodePacked(address(this), name));
+        gameHash = _storage.getGameHash(name);
 
 
         NewGameVars memory vars;
@@ -266,14 +266,6 @@ contract PlatformGame is Ownable{
 
         // platformFee = fee * (1-agentRate)
         platformFee = fee.sub(agentFee);
-    }
-
-    /**
-     * @notice Calculate game hash based on game name
-     * @param name Total game name
-     */
-    function getGameHash(uint name) public view returns (bytes32){
-        return sha256(abi.encodePacked(address(this), name));
     }
 
     struct PlayGameVars {
