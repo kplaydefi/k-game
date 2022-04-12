@@ -263,10 +263,18 @@ contract GameStorage is Ownable {
     }
 
     /**
-     * @notice Return the game hash by game name
+     * @notice Return the game hash by game hash index
+     * @param index The game hash index
+     */
+    function getGameHash(uint index) public view returns (bytes32 gameHash) {
+        return _gameList[index];
+    }
+
+    /**
+     * @notice Generate game hash by game name
      * @param name The game name
      */
-    function getGameHash(uint name) public view returns (bytes32 gameHash) {
+    function generateGameHash(uint name) public view returns (bytes32 gameHash) {
         return sha256(abi.encodePacked(address(this), name));
     }
 

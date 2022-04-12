@@ -17,7 +17,9 @@ interface IGameStorage {
 
     function getGame(bytes32 gameHash) external view returns (uint name, uint startTime, uint endTime, uint minAmount, uint maxAmount, uint chargeRate, uint status, uint result);
 
-    function getGameHash(uint name) external view returns (bytes32 gameHash);
+    function getGameHash(uint index) external view returns (bytes32 gameHash);
+
+    function generateGameHash(uint name) external view returns (bytes32 gameHash);
 
     function getGameLength() external view returns (uint length);
 

@@ -112,7 +112,7 @@ contract PlatformGame is Ownable{
 
 
         /* Generate game hash based on game name */
-        gameHash = _storage.getGameHash(name);
+        gameHash = _storage.generateGameHash(name);
 
 
         NewGameVars memory vars;
