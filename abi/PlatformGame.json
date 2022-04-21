@@ -3,11 +3,6 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "tokenContract_",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
         "name": "storage_",
         "type": "address"
       }
@@ -89,7 +84,7 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "agentFee",
+        "name": "proxyFee",
         "type": "uint256"
       },
       {
@@ -278,19 +273,6 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "tokenContract",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "address",
@@ -406,7 +388,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "agentFee",
+        "name": "proxyFee",
         "type": "uint256"
       },
       {

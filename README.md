@@ -5,5 +5,5 @@ Polygon Test Network
 
 | Contract | Address |
 | --- | --- |
-| GameStorage | [0x538aAD7A834b493d2939Aa888110AcD6735853F2](https://mumbai.polygonscan.com/address/0x538aad7a834b493d2939aa888110acd6735853f2) |
-| Game | [0xacd3DC2645183E096c6B078f9E4bd6F53B36219F](https://mumbai.polygonscan.com/address/0xacd3dc2645183e096c6b078f9e4bd6f53b36219f) |
+| GameStorage | [0x9Ef7B986B8FcedA5A63C02b0E66CAe94466E28B8](https://mumbai.polygonscan.com/address/0x9Ef7B986B8FcedA5A63C02b0E66CAe94466E28B8) |
+| Game | [0xeC2A8EFD3AD86be7F3036602Fd174BAD7d1Cb2Af](https://mumbai.polygonscan.com/address/0xeC2A8EFD3AD86be7F3036602Fd174BAD7d1Cb2Af) |

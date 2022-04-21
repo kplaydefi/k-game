@@ -12,29 +12,9 @@ contract Game {
     using SafeMath for uint256;
 
     /**
-     * @notice Specified currency for betting
-     */
-    address public tokenContract;
-
-    /**
-     * @notice Proxy address
-     */
-    address public proxy;
-
-    /**
-     * @notice Game storage contract
+    * @notice Game storage contract
      */
     IGameStorage public _storage;
-
-    /**
-     * @notice The platform deducts the fee for the agent to create the game
-     */
-    IProxyFee public proxyFee;
-
-    /**
-     * @notice User-Agent Relationship Binding and Verification
-     */
-    IRelationship public relationship;
 
     /**
      * @notice The game state definition
@@ -63,7 +43,7 @@ contract Game {
     /**
      * @notice Event emitted when the game over submitted result
      */
-    event GameResultSubmitted(bytes32 gameHash, uint gameName, uint fee, uint agentFee, uint platformFee, uint option1Amount, uint option2Amount, uint status, uint result);
+    event GameResultSubmitted(bytes32 gameHash, uint gameName, uint fee, uint proxyFee, uint platformFee, uint option1Amount, uint option2Amount, uint status, uint result);
 
     /**
      * @notice Event emitted when the game canceled
@@ -82,27 +62,16 @@ contract Game {
 
 
     modifier isProxy(){
-        require(msg.sender == proxy, "caller is not the proxy");
+        require(msg.sender == _storage.proxy(), "caller is not the proxy");
         _;
     }
 
     /**
      * @notice Game constructor
-     * @param tokenContract_ The address of the Kusdt erc20 token
      * @param storage_ The address of the storage contract
-     * @param proxyFee_ The address of proxy fee contract
-     * @param relationship_ The address of User-Agent Relationship contract
-     * @param proxy_ The address of proxy admin account
      */
-    constructor(address tokenContract_, address storage_, address proxyFee_, address relationship_, address proxy_){
-        tokenContract = tokenContract_;
+    constructor(address storage_){
         _storage = IGameStorage(storage_);
-        proxyFee = IProxyFee(proxyFee_);
-        relationship = IRelationship(relationship_);
-        proxy = proxy_;
-
-        /* Check if proxy address exists in proxy relationship */
-        require(relationship.isProxy(proxy), "Check proxy error");
 
         /* Check whether the storage contract address is legal */
         require(_storage.isStorage(), "Check storage error");
@@ -125,7 +94,7 @@ contract Game {
      * @param endTime The game end time
      * @param minAmount The game bet minimum amount
      * @param maxAmount The game betting maximum amount
-     * @param feeRate The fee rate charged by the platform and the agent after the game is over
+     * @param feeRate The fee rate charged by the platform and the proxy after the game is over
      */
     function newGame(uint name, uint startTime, uint endTime, uint minAmount, uint maxAmount, uint feeRate) external isProxy returns (bytes32 gameHash){
 
@@ -156,6 +125,8 @@ contract Game {
         _storage.createGame(gameHash, name, startTime, endTime, minAmount, maxAmount, feeRate, uint(GameStatus.RUNNING));
 
         /* The platform charges the proxy to create the game fee */
+
+        IProxyFee  proxyFee = IProxyFee(_storage.proxyFee());
         proxyFee.payNewGame(msg.sender);
 
         /* Emit a GameCreated event */
@@ -214,13 +185,13 @@ contract Game {
 
         //fee
         uint fee;
-        uint agentFee;
+        uint proxyFee;
         uint platformFee;
         uint result;
 
         //address
-        address agent;
-        address platform;
+        address proxyDst;
+        address platformDst;
     }
 
     /**
@@ -247,8 +218,8 @@ contract Game {
 
         /* Calculation of fees and settlement of user betting wins and losses */
         if (result == uint(GameResult.OPTION1)) {
-            /* Calculate game service charge of agent and platform */
-            (vars.fee, vars.agentFee, vars.platformFee) = calculateFee(vars.option2Amount, vars.feeRate);
+            /* Calculate game service charge of proxy and platform */
+            (vars.fee, vars.proxyFee, vars.platformFee) = calculateFee(vars.option2Amount, vars.feeRate);
 
             /* Set game result to option 1 */
             vars.result = uint(GameResult.OPTION1);
@@ -257,8 +228,8 @@ contract Game {
             _storage.liquidateOption1(gameHash, vars.fee);
 
         } else if (result == uint(GameResult.OPTION2)) {
-            /* Calculate game service charge of agent and platform */
-            (vars.fee, vars.agentFee, vars.platformFee) = calculateFee(vars.option1Amount, vars.feeRate);
+            /* Calculate game service charge of proxy and platform */
+            (vars.fee, vars.proxyFee, vars.platformFee) = calculateFee(vars.option1Amount, vars.feeRate);
 
             /* Set game result to option 2 */
             vars.result = uint(GameResult.OPTION2);
@@ -269,36 +240,36 @@ contract Game {
             revert("Option not in specified range");
 
         }
-        /* Send the fees of the platform and the agent to the corresponding address */
-        vars.agent = _storage.agent();
-        vars.platform = _storage.platform();
-        doTransferOut(vars.agent, vars.agentFee);
-        doTransferOut(vars.platform, vars.platformFee);
+        /* Send the fees of the platform and the proxy to the corresponding address */
+        vars.proxyDst = _storage.proxyFeeDst();
+        vars.platformDst = _storage.platformFeeDst();
+        doTransferOut(vars.proxyDst, vars.proxyFee);
+        doTransferOut(vars.platformDst, vars.platformFee);
 
         /* Write the game state and result into storage */
         _storage.setGameResult(gameHash, uint(GameStatus.ENDED), vars.result);
 
         /* Emit a GameResultSubmitted event */
-        emit GameResultSubmitted(gameHash, vars.name, vars.fee, vars.agentFee, vars.platformFee, vars.option1Amount, vars.option2Amount, uint(GameStatus.ENDED), vars.result);
+        emit GameResultSubmitted(gameHash, vars.name, vars.fee, vars.proxyFee, vars.platformFee, vars.option1Amount, vars.option2Amount, uint(GameStatus.ENDED), vars.result);
     }
 
     /**
-     * @notice Calculate the fee amount charged by the final platform and agent
+     * @notice Calculate the fee amount charged by the final platform and proxy
      * @param amount Total amount of losers' bets
      * @param feeRate The game setting fee ratio
      */
-    function calculateFee(uint amount, uint feeRate) public view returns (uint fee, uint agentFee, uint platformFee){
-        /* Get the fee rate of fees charged by the agent */
-        uint agentFeeRate = _storage.agentFeeRate();
+    function calculateFee(uint amount, uint feeRate) public view returns (uint fee, uint proxyFee, uint platformFee){
+        /* Get the fee rate of fees charged by the proxy */
+        uint proxyFeeRate = _storage.proxyFeeRate();
 
         // fee = loseAmount * feeRate
         fee = amount.wmul(feeRate);
 
-        // agentFee = fee * agentRate
-        agentFee = fee.wmul(agentFeeRate);
+        // proxyFee = fee * proxyFeeRate
+        proxyFee = fee.wmul(proxyFeeRate);
 
-        // platformFee = fee * (1-agentRate)
-        platformFee = fee.sub(agentFee);
+        // platformFee = fee * (1-proxyFee)
+        platformFee = fee.sub(proxyFee);
     }
 
 
@@ -328,7 +299,8 @@ contract Game {
         PlayGameVars memory vars;
 
         /* The betting player must exist in the current proxy relationship */
-        vars.verify = relationship.verifyAndBind(msg.sender, proxy);
+        IRelationship relationship = IRelationship(_storage.relationship());
+        vars.verify = relationship.verifyAndBind(msg.sender, _storage.proxy());
         require(vars.verify, "Check user and proxy relationship error");
 
         /* Check if game exists and game state must be in running state */
@@ -404,8 +376,8 @@ contract Game {
      *            See here: https://medium.com/coinmonks/missing-return-value-bug-at-least-130-tokens-affected-d67bf08521ca
      */
     function doTransferIn(address from, uint amount) internal returns (uint) {
-        EIP20NonStandardInterface token = EIP20NonStandardInterface(tokenContract);
-        uint balanceBefore = EIP20Interface(tokenContract).balanceOf(address(this));
+        EIP20NonStandardInterface token = EIP20NonStandardInterface(_storage.tokenContract());
+        uint balanceBefore = EIP20Interface(_storage.tokenContract()).balanceOf(address(this));
         token.transferFrom(from, address(this), amount);
 
         bool success;
@@ -425,7 +397,7 @@ contract Game {
         require(success, "Token transfer in failed");
 
         // Calculate the amount that was *actually* transferred
-        uint balanceAfter = EIP20Interface(tokenContract).balanceOf(address(this));
+        uint balanceAfter = EIP20Interface(_storage.tokenContract()).balanceOf(address(this));
         require(balanceAfter >= balanceBefore, "Token transfer in overflow");
         return balanceAfter - balanceBefore; // underflow already checked above, just subtract
     }
@@ -440,7 +412,7 @@ contract Game {
      *            See here: https://medium.com/coinmonks/missing-return-value-bug-at-least-130-tokens-affected-d67bf08521ca
      */
     function doTransferOut(address to, uint amount) internal {
-        EIP20NonStandardInterface token = EIP20NonStandardInterface(tokenContract);
+        EIP20NonStandardInterface token = EIP20NonStandardInterface(_storage.tokenContract());
         token.transfer(to, amount);
         bool success;
         assembly {

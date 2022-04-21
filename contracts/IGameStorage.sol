@@ -5,11 +5,23 @@ pragma solidity >=0.5.16 <0.9.0;
 interface IGameStorage {
     function isStorage() external view returns (bool);
 
-    function agent() external view returns (address);
+    function admin() external view returns (address);
 
-    function platform() external view returns (address);
+    function tokenContract() external view returns (address);
 
-    function agentFeeRate() external view returns (uint);
+    function proxyFeeDst() external view returns (address);
+
+    function platformFeeDst() external view returns (address);
+
+    function proxyFeeRate() external view returns (uint);
+
+    function proxy() external view returns (address);
+
+    function proxyFee() external view returns (address);
+
+    function relationship() external view returns (address);
+
+
 
     function createGame(bytes32 gameHash, uint name, uint startTime, uint endTime, uint minAmount, uint maxAmount, uint chargeRate, uint status) external;
 

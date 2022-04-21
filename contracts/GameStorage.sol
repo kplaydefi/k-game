@@ -4,6 +4,9 @@ pragma solidity >=0.5.16 <0.9.0;
 
 import "./SafeMath.sol";
 import "./Ownable.sol";
+import "./IRelationship.sol";
+import "./EIP20Interface.sol";
+
 
 contract GameStorage is Ownable {
     using SafeMath for uint256;
@@ -14,24 +17,46 @@ contract GameStorage is Ownable {
     bool internal _isStorage = true;
 
     /*
-     * @notice Administrator for this contract
+     * @notice Administrator for this contract(only game contract)
      */
     address internal _admin;
 
-    /*
-     * @notice Agency fee address
+    /**
+    * @notice Specified currency for betting
      */
-    address payable internal _agent;
+    address public tokenContract;
 
     /*
-     * @notice Platform fee address
+     * @notice Platform fee receiving address
      */
-    address payable internal _platform;
+    address payable internal _platformFeeDst;
 
     /*
-     * @notice Agency fee rate
+     * @notice Proxy fee receiving address
      */
-    uint internal _agentFeeRate;
+    address payable internal _proxyFeeDst;
+
+    /*
+     * @notice Proxy fee rate
+     */
+    uint internal _proxyFeeRate;
+
+    /*
+     * @notice Proxy address
+     */
+    address internal _proxy;
+
+    /*
+     * @notice The platform deducts the fee for the proxy to create the game
+     */
+    address internal _proxyFee;
+
+    /*
+     * @notice User-Proxy Relationship Binding and Verification
+     */
+    address internal _relationship;
+
+
 
     struct Game {
         uint name;
@@ -78,28 +103,49 @@ contract GameStorage is Ownable {
 
 
 
+    // ============================== Events ==============================
     /**
      * @notice Event emitted when set admin account
      */
     event AdminSet(address indexed previousAdmin, address indexed newAdmin);
 
     /**
-     * @notice Event emitted when set agent fee account
+     * @notice Event emitted when set proxy fee account
      */
-    event AgentAccountSet(address indexed previousAgent, address indexed newAgent);
+    event ProxyFeeDstSet(address indexed previousProxyFeeDst, address indexed newProxyFeeDst);
 
     /**
      * @notice Event emitted when set platform fee account
      */
-    event PlatformAccountSet(address indexed previousPlatform, address indexed newPlatform);
+    event PlatformFeeDstSet(address indexed previousPlatformFeeDst, address indexed newPlatformFeeDst);
 
     /**
-     * @notice Event emitted when set agent fee rate
+     * @notice Event emitted when set proxy fee rate
      */
-    event AgentRateSet(uint rate);
+    event ProxyRateSet(uint rate);
+
+    /**
+     * @notice Event emitted when set proxy address
+     */
+    event ProxySet(address indexed previousProxy, address indexed newProxy);
+
+    /**
+     * @notice Event emitted when set proxy fee contract address
+     */
+    event ProxyFeeSet(address indexed previousProxyFee, address indexed newProxyFee);
+
+    /**
+     * @notice Event emitted when set relationship contract address
+     */
+    event RelationshipSet(address indexed previousRelationship, address indexed newRelationship);
 
 
-    constructor(){
+    constructor(address tokenContract_){
+
+        // Set token contract and sanity check it
+        tokenContract = tokenContract_;
+
+        EIP20Interface(tokenContract).totalSupply();
     }
 
     modifier onlyAdmin(){
@@ -113,6 +159,7 @@ contract GameStorage is Ownable {
     function isStorage() public view returns (bool){
         return _isStorage;
     }
+
 
 
     // ============================== Ownable functions ==============================
@@ -138,74 +185,148 @@ contract GameStorage is Ownable {
         return _admin;
     }
 
-    // agent account
+
     /**
-     * @notice Set the agent's receiving fee address
-     * @param newAgent Agent address of payable
+    * @notice Set the platform fee receiving address
+     * @param newPlatformFeeDst Platform fee address of payable
      */
-    function setAgentAccount(address payable newAgent) public onlyOwner {
-        /* Check if newAgent  is a non-zero address */
-        require(newAgent != address(0), "new agent account is the zero address");
+    function setPlatformFeeDst(address payable newPlatformFeeDst) public onlyOwner {
+        /* Check if newPlatformFeeDst  is a non-zero address */
+        require(newPlatformFeeDst != address(0), "new platform fee address is the zero address");
 
-        /* Update agent to new agent */
-        _agent = newAgent;
+        /* Update platform fee address  to new platform fee address*/
+        _platformFeeDst = newPlatformFeeDst;
 
-        /* Emit an AgentAccountSet event */
-        emit AgentAccountSet(_agent, newAgent);
+        /* Emit a PlatformFeeDstSet event */
+        emit PlatformFeeDstSet(_platformFeeDst, newPlatformFeeDst);
     }
 
     /**
-     * @notice Return the agent fee address
+     * @notice Return the platform fee receiving address
      */
-    function agent() public view returns (address){
-        return _agent;
+    function platformFeeDst() public view returns (address){
+        return _platformFeeDst;
     }
 
     /**
-     * @notice Set the platform receiving fee address
-     * @param newPlatform Platform address of payable
+     * @notice Set the proxy fee receiving address
+     * @param newProxyFeeDst Proxy fee address of payable
      */
-    function setPlatformAccount(address payable newPlatform) public onlyOwner {
-        /* Check if newPlatform  is a non-zero address */
-        require(newPlatform != address(0), "new platform account is the zero address");
+    function setProxyFeeDst(address payable newProxyFeeDst) public onlyOwner {
+        /* Check if newProxyFeeDst  is a non-zero address */
+        require(newProxyFeeDst != address(0), "new proxy fee address is the zero address");
 
-        /* Update platform to new platform */
-        _platform = newPlatform;
+        /* Update proxyFeeDst to new newProxyFeeDst */
+        _proxyFeeDst = newProxyFeeDst;
 
-        /* Emit a PlatformAccountSet event */
-        emit PlatformAccountSet(_platform, newPlatform);
+        /* Emit an ProxyFeeDstSet event */
+        emit ProxyFeeDstSet(_proxyFeeDst, newProxyFeeDst);
     }
 
     /**
-     * @notice Return the platform fee address
+     * @notice Return the proxy fee receiving address
      */
-    function platform() public view returns (address){
-        return _platform;
+    function proxyFeeDst() public view returns (address){
+        return _proxyFeeDst;
     }
 
+
     /**
-     * @notice Set the agency fee collection ratio
-     * @param newAgentFeeRate Agency fee ratio
+     * @notice Set the proxy fee collection ratio
+     * @param newProxyFeeRate Proxy fee ratio
      */
-    function setAgentFeeRate(uint newAgentFeeRate) public onlyOwner {
+    function setProxyFeeRate(uint newProxyFeeRate) public onlyOwner {
         /* Check if fee rate is 0 */
-        require(newAgentFeeRate > 0, "The fee rate cannot be 0");
+        require(newProxyFeeRate > 0, "The fee rate cannot be 0");
 
-        /* Update agentFeeRate to new agentFeeRate */
-        _agentFeeRate = newAgentFeeRate;
+        /* Update proxyFeeRate to new rate */
+        _proxyFeeRate = newProxyFeeRate;
 
-        /* Emit an AgentRateSet event */
-        emit AgentRateSet(newAgentFeeRate);
+        /* Emit an ProxyRateSet event */
+        emit ProxyRateSet(newProxyFeeRate);
     }
 
     /**
-     * @notice Return the agency fee collection ratio
+     * @notice Return the proxy fee collection ratio
      */
-    function agentFeeRate() public view returns (uint){
-        return _agentFeeRate;
+    function proxyFeeRate() public view returns (uint){
+        return _proxyFeeRate;
     }
 
-    // ============================== Storage functions ==============================
+    /**
+    * @notice Set the proxy address
+     * @param newProxy Proxy address
+     */
+    function setProxy(address newProxy) public onlyOwner {
+        /* Check if newProxy  is a non-zero address */
+        require(newProxy != address(0), "new proxy address is the zero address");
+
+        /* Update proxy to new newProxy */
+        _proxy = newProxy;
+
+        /* Check if proxy address exists in proxy relationship */
+        require(IRelationship(_relationship).isProxy(_proxy), "Check proxy error");
+
+        /* Emit an ProxySet event */
+        emit ProxySet(_proxy, newProxy);
+    }
+
+    /**
+     * @notice Return the proxy fee address
+     */
+    function proxy() public view returns (address){
+        return _proxy;
+    }
+
+
+    /**
+    * @notice Set up the platform to charge the proxy to create a game fee contract
+     * @param newProxyFee Proxy fee contract address
+     */
+    function setProxyFee(address newProxyFee) public onlyOwner {
+        /* Check if newProxyFee  is a non-zero address */
+        require(newProxyFee != address(0), "new proxy fee address is the zero address");
+
+        /* Update proxyFee to new newProxyFee */
+        _proxyFee = newProxyFee;
+
+        /* Emit an ProxyFeeSet event */
+        emit ProxyFeeSet(_proxyFee, newProxyFee);
+    }
+
+    /**
+     * @notice Return the proxy fee contract address
+     */
+    function proxyFee() public view returns (address){
+        return _proxyFee;
+    }
+
+    /**
+    * @notice Set User-Proxy Relationship Binding and Verification contract address
+     * @param newRelationship Relationship contract
+     */
+    function setRelationship(address payable newRelationship) public onlyOwner {
+        /* Check if newRelationship  is a non-zero address */
+        require(newRelationship != address(0), "new relationship contract address is the zero address");
+
+        /* Update relationship to new relationship */
+        _relationship = newRelationship;
+
+        /* Emit an RelationshipSet event */
+        emit RelationshipSet(_relationship, newRelationship);
+    }
+
+    /**
+     * @notice Return the relationship contract address
+     */
+    function relationship() public view returns (address){
+        return _relationship;
+    }
+
+
+
+
+    // ============================== Game Storage functions ==============================
 
     /**
      * @notice Add a new game to game mappings
@@ -215,7 +336,7 @@ contract GameStorage is Ownable {
      * @param endTime The game end time
      * @param minAmount The game bet minimum amount
      * @param maxAmount The game betting maximum amount
-     * @param feeRate The fee rate charged by the platform and the agent after the game is over
+     * @param feeRate The fee rate charged by the platform and the proxy after the game is over
      * @param status The game state
      */
     function createGame(bytes32 gameHash, uint name, uint startTime, uint endTime, uint minAmount, uint maxAmount, uint feeRate, uint status) public onlyAdmin {
