@@ -1,0 +1,10 @@
+node_modules/
+.idea/
+.DS_Store*
+build/
+
+migrations/
+
+resources/
+
+test/
