@@ -22,7 +22,7 @@ Game smart contract
 
 ## Test
 ```shell
-    npm run temp
+    npm run test
 ```
 
 Polygon Test Network
