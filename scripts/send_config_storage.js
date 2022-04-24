@@ -9,10 +9,9 @@ const {
       }        = hre;
 
 module.exports = (async () => {
-    console.log('------------------------')
-    const {deployer}  = await getNamedAccounts();
-    const resource    = networks[network.name];
-    const Game        = await deployments.get("Game");
+    const {deployer} = await getNamedAccounts();
+    const resource   = networks[network.name];
+    const Game       = await deployments.get("Game");
 
     const txs               = [["Method", "Value", "Transaction"]];
     const sendGameStorageTx = async (method, value) => {
