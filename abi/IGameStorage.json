@@ -1,111 +1,7 @@
 [
   {
     "inputs": [],
-    "name": "isStorage",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "admin",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "tokenContract",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "proxyFeeDst",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "platformFeeDst",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "proxyFeeRate",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "proxy",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "proxyFee",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "relationship",
     "outputs": [
       {
         "internalType": "address",
@@ -167,24 +63,44 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "name",
+        "type": "uint256"
+      }
+    ],
+    "name": "generateGameHash",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "gameHash",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "bytes32",
         "name": "gameHash",
         "type": "bytes32"
       },
       {
-        "internalType": "uint256",
-        "name": "status",
-        "type": "uint256"
-      },
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "getBalance",
+    "outputs": [
       {
         "internalType": "uint256",
-        "name": "result",
+        "name": "balance",
         "type": "uint256"
       }
     ],
-    "name": "setGameResult",
-    "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -261,25 +177,6 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "name",
-        "type": "uint256"
-      }
-    ],
-    "name": "generateGameHash",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "gameHash",
-        "type": "bytes32"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "getGameLength",
     "outputs": [
@@ -290,6 +187,286 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "gameHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getGameVote",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "option1Amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "option2Amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "option1Count",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "option2Count",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "gameHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "voterIndex",
+        "type": "uint256"
+      }
+    ],
+    "name": "getOption1",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "voter",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "gameHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "voterIndex",
+        "type": "uint256"
+      }
+    ],
+    "name": "getOption2",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "voter",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "gameHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "getPayerVote",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "option1Amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "option2Amount",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "gameHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "proxyIndex",
+        "type": "uint256"
+      }
+    ],
+    "name": "getProxyVote",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "proxyId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "gameHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getProxyVoteCount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "length",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "isStorage",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "platformFeeDst",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "proxy",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "proxyFee",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "relationship",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "gameHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "newBalance",
+        "type": "uint256"
+      }
+    ],
+    "name": "setBalance",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "gameHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "status",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "result",
+        "type": "uint256"
+      }
+    ],
+    "name": "setGameResult",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -344,157 +521,34 @@
         "internalType": "bytes32",
         "name": "gameHash",
         "type": "bytes32"
-      }
-    ],
-    "name": "getGameVote",
-    "outputs": [
+      },
       {
         "internalType": "uint256",
-        "name": "option1Amount",
+        "name": "proxyId",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "option2Amount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "option1Count",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "option2Count",
+        "name": "amount",
         "type": "uint256"
       }
     ],
-    "stateMutability": "view",
+    "name": "setProxyUserVote",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "gameHash",
-        "type": "bytes32"
-      },
+    "inputs": [],
+    "name": "tokenContract",
+    "outputs": [
       {
         "internalType": "address",
-        "name": "account",
+        "name": "",
         "type": "address"
       }
     ],
-    "name": "getPayerVote",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "option1Amount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "option2Amount",
-        "type": "uint256"
-      }
-    ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "gameHash",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "newBalance",
-        "type": "uint256"
-      }
-    ],
-    "name": "setBalance",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "gameHash",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
-      }
-    ],
-    "name": "getBalance",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "balance",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "gameHash",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "fee",
-        "type": "uint256"
-      }
-    ],
-    "name": "liquidateOption1",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "gameHash",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "fee",
-        "type": "uint256"
-      }
-    ],
-    "name": "liquidateOption2",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "gameHash",
-        "type": "bytes32"
-      }
-    ],
-    "name": "cancel",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   }
 ]

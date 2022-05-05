@@ -96,13 +96,13 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "option1Amount",
+        "name": "wonAmount",
         "type": "uint256"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "option2Amount",
+        "name": "lossAmount",
         "type": "uint256"
       },
       {
@@ -221,13 +221,65 @@
     "type": "event"
   },
   {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "gameHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "cancel",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
-    "name": "_storage",
+    "name": "database",
     "outputs": [
       {
         "internalType": "contract IGameStorage",
         "name": "",
         "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "gameHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "result",
+        "type": "uint256"
+      }
+    ],
+    "name": "getGameVoteByResult",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "wonAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "wonCount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "lossAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "lossCount",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -250,45 +302,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "owner",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "renounceOwnership",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "newOwner",
-        "type": "address"
-      }
-    ],
-    "name": "transferOwnership",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -328,7 +341,7 @@
     "outputs": [
       {
         "internalType": "bytes32",
-        "name": "gameHash",
+        "name": "",
         "type": "bytes32"
       }
     ],
@@ -336,65 +349,13 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "gameHash",
-        "type": "bytes32"
-      }
-    ],
-    "name": "cancel",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "gameHash",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "result",
-        "type": "uint256"
-      }
-    ],
-    "name": "submitGameResult",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "feeRate",
-        "type": "uint256"
-      }
-    ],
-    "name": "calculateFee",
+    "inputs": [],
+    "name": "owner",
     "outputs": [
       {
-        "internalType": "uint256",
-        "name": "fee",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "proxyFee",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "platformFee",
-        "type": "uint256"
+        "internalType": "address",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -420,6 +381,50 @@
     ],
     "name": "play",
     "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "renounceOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "gameHash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "result",
+        "type": "uint256"
+      }
+    ],
+    "name": "submitGameResult",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "transferOwnership",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
     "stateMutability": "nonpayable",
     "type": "function"
   },
