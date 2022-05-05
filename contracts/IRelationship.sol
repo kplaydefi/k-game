@@ -9,9 +9,16 @@ interface IRelationship {
     function verifyAndBind(address user, address proxy) external returns (bool);
 
     /**
+    * return proxyId, proxyAddress, proxyFeeRate
+    */
+    function getProxyDetail(address user) external view returns (uint, address, uint);
+
+    function getProxyDetail(uint proxyId) external view returns (uint, address, uint);
+
+    /**
     * return true when user binded to proxy
     */
-    function isBinded(address user, address proxy) external returns (bool);
+    function isBinded(address user, address proxy) external view returns (bool);
     
-    function isProxy(address proxy) external returns (bool);
+    function isProxy(address proxy) external view returns (bool);
 }

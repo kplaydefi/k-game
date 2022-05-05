@@ -5,16 +5,16 @@ import "./SafeMath.sol";
 import "./EIP20NonStandardInterface.sol";
 import "./EIP20Interface.sol";
 import "./IGameStorage.sol";
-import "./IProxyFee.sol";
 import "./IRelationship.sol";
+import "./Ownable.sol";
 
-contract Game {
+contract Game is Ownable{
     using SafeMath for uint256;
 
     /**
     * @notice Game storage contract
      */
-    IGameStorage public _storage;
+    IGameStorage internal _storage;
 
     /**
      * @notice The game state definition
@@ -43,7 +43,7 @@ contract Game {
     /**
      * @notice Event emitted when the game over submitted result
      */
-    event GameResultSubmitted(bytes32 gameHash, uint gameName, uint fee, uint proxyFee, uint platformFee, uint option1Amount, uint option2Amount, uint status, uint result);
+    event GameResultSubmitted(bytes32 gameHash, uint gameName, uint fee, uint proxyFee, uint platformFee, uint wonAmount, uint lossAmount, uint status, uint result);
 
     /**
      * @notice Event emitted when the game canceled
@@ -77,6 +77,10 @@ contract Game {
         require(_storage.isStorage(), "Check storage error");
     }
 
+    function database() external view returns (IGameStorage){
+        return _storage;
+    }
+
     struct NewGameVars {
         uint startTime;
         uint endTime;
@@ -96,7 +100,7 @@ contract Game {
      * @param maxAmount The game betting maximum amount
      * @param feeRate The fee rate charged by the platform and the proxy after the game is over
      */
-    function newGame(uint name, uint startTime, uint endTime, uint minAmount, uint maxAmount, uint feeRate) external isProxy returns (bytes32 gameHash){
+    function newGameInternal(uint name, uint startTime, uint endTime, uint minAmount, uint maxAmount, uint feeRate) internal returns (bytes32 gameHash){
 
         /* Verify that the game start time must be greater than the current time */
         require(startTime >= block.timestamp, "Start time must be >= current time");
@@ -110,10 +114,8 @@ contract Game {
         /* Verify that the maximum bet amount must be greater than the minimum bet amount */
         require(maxAmount > minAmount, "min amount must be > max amount");
 
-
         /* Generate game hash based on game name */
         gameHash = _storage.generateGameHash(name);
-
 
         NewGameVars memory vars;
 
@@ -123,11 +125,6 @@ contract Game {
 
         /* Write the game info into storage */
         _storage.createGame(gameHash, name, startTime, endTime, minAmount, maxAmount, feeRate, uint(GameStatus.RUNNING));
-
-        /* The platform charges the proxy to create the game fee */
-
-        IProxyFee  proxyFee = IProxyFee(_storage.proxyFee());
-        proxyFee.payNewGame(msg.sender);
 
         /* Emit a GameCreated event */
         emit GameCreated(gameHash, name, uint(GameStatus.RUNNING), feeRate);
@@ -142,13 +139,17 @@ contract Game {
         uint feeRate;
         uint status;
         uint result;
+
+
+        address voter;
+        uint amount;
     }
 
     /**
      * @notice Proxy cancel the game
      * @param gameHash Hash of the game to be canceled
      */
-    function cancel(bytes32 gameHash) external isProxy {
+    function cancelInternal(bytes32 gameHash) internal  {
         CancelGameVars memory vars;
 
         /* Check if the game exists */
@@ -158,8 +159,23 @@ contract Game {
         /* Cancellation of the game must be made before submitting the game results */
         require(vars.status == uint(GameStatus.RUNNING), "Check status failed");
 
-        /* Cancel and liquidate user bets */
-        _storage.cancel(gameHash);
+        (, , uint option1Count, uint option2Count) = _storage.getGameVote(gameHash);
+
+        //Cancel and liquidate user bets Option 1
+        for (uint256 i = 0; i < option1Count; i++) {
+            (vars.voter, vars.amount) = _storage.getOption1(gameHash, i);
+            uint balance = _storage.getBalance(gameHash, vars.voter);
+            uint newBalance = balance.add(vars.amount);
+            _storage.setBalance(gameHash, vars.voter, newBalance);
+        }
+
+        //Cancel and liquidate user bets Option 2
+        for (uint256 i = 0; i < option2Count; i++) {
+            (vars.voter, vars.amount) = _storage.getOption2(gameHash, i);
+            uint balance = _storage.getBalance(gameHash, vars.voter);
+            uint newBalance = balance.add(vars.amount);
+            _storage.setBalance(gameHash, vars.voter, newBalance);
+        }
 
         /* Write the game state and result into storage */
         _storage.setGameResult(gameHash, uint(GameStatus.CANCELLED), uint(GameResult.NONE));
@@ -168,8 +184,23 @@ contract Game {
         emit GameCancelled(gameHash, vars.name);
     }
 
-    struct SubmitVars {
 
+    function getGameVoteByResult(bytes32 gameHash, uint result) public view returns (uint wonAmount, uint wonCount, uint lossAmount, uint lossCount){
+
+        (uint option1Amount, uint option2Amount, uint option1Count, uint option2Count) = _storage.getGameVote(gameHash);
+
+        if (result == uint(GameResult.OPTION1)) {
+            return (option1Amount, option1Count, option2Amount, option2Count);
+
+        } else if (result == uint(GameResult.OPTION2)) {
+
+            return (option2Amount, option2Count, option1Amount, option1Count);
+        } else {
+            return (0, 0, 0, 0);
+        }
+    }
+
+    struct SubmitVars {
         // Game info
         uint name;
         uint startTime;
@@ -179,19 +210,15 @@ contract Game {
         uint feeRate;
         uint status;
 
-        //Vote options total amount
-        uint option1Amount;
-        uint option2Amount;
+        uint wonAmount;
+        uint wonCount;
+        uint lossAmount;
+        uint totalAmount;
 
         //fee
         uint fee;
         uint proxyFee;
         uint platformFee;
-        uint result;
-
-        //address
-        address proxyDst;
-        address platformDst;
     }
 
     /**
@@ -199,7 +226,7 @@ contract Game {
      * @param gameHash Hash of the game result to be submitted
      * @param result The game result value of GameResult.OPTION1 or  GameResult.OPTION2
      */
-    function submitGameResult(bytes32 gameHash, uint result) external isProxy {
+    function submitGameResultInternal(bytes32 gameHash, uint result) internal {
         SubmitVars memory vars;
 
         /* Check if the game end time is reached */
@@ -212,69 +239,123 @@ contract Game {
         /* The result value submitted by the game must be within the specified value range */
         require(result == uint(GameResult.OPTION1) || result == uint(GameResult.OPTION2), "Option not in specified range");
 
-        /* If one option bet amount is 0, the win or loss cannot be calculated */
-        (vars.option1Amount, vars.option2Amount,,) = _storage.getGameVote(gameHash);
-        require(vars.option1Amount > 0 && vars.option2Amount > 0, "Option 1 or Option2 total bet amount is 0");
+        (vars.wonAmount, vars.wonCount, vars.lossAmount,) = getGameVoteByResult(gameHash, result);
+        //Check for void bets
+        require(vars.wonAmount > 0 && vars.lossAmount > 0, "Option 1 or Option2 total bet amount is 0");
 
-        /* Calculation of fees and settlement of user betting wins and losses */
-        if (result == uint(GameResult.OPTION1)) {
-            /* Calculate game service charge of proxy and platform */
-            (vars.fee, vars.proxyFee, vars.platformFee) = calculateFee(vars.option2Amount, vars.feeRate);
+        // fee = loseAmount * gameFeeRate
+        vars.fee = vars.lossAmount.wmul(vars.feeRate);
 
-            /* Set game result to option 1 */
-            vars.result = uint(GameResult.OPTION1);
+        vars.totalAmount = vars.wonAmount.add(vars.lossAmount);
 
-            /* Liquidation option 1 betting user's winning amount */
-            _storage.liquidateOption1(gameHash, vars.fee);
+        /* Liquidation betting user's winning amount */
+        liquidate(gameHash, result, vars.wonCount, vars.wonAmount, vars.lossAmount, vars.fee);
 
-        } else if (result == uint(GameResult.OPTION2)) {
-            /* Calculate game service charge of proxy and platform */
-            (vars.fee, vars.proxyFee, vars.platformFee) = calculateFee(vars.option1Amount, vars.feeRate);
-
-            /* Set game result to option 2 */
-            vars.result = uint(GameResult.OPTION2);
-
-            /* Liquidation option 2 betting user's winning amount */
-            _storage.liquidateOption2(gameHash, vars.fee);
-        } else {
-            revert("Option not in specified range");
-
-        }
-        /* Send the fees of the platform and the proxy to the corresponding address */
-        vars.proxyDst = _storage.proxyFeeDst();
-        vars.platformDst = _storage.platformFeeDst();
-        doTransferOut(vars.proxyDst, vars.proxyFee);
-        doTransferOut(vars.platformDst, vars.platformFee);
+        /* The calculation platform and the proxy will transfer the fee amount and send it away */
+        (vars.proxyFee, vars.platformFee) = calculateFee(gameHash, vars.fee, vars.totalAmount);
 
         /* Write the game state and result into storage */
-        _storage.setGameResult(gameHash, uint(GameStatus.ENDED), vars.result);
+        _storage.setGameResult(gameHash, uint(GameStatus.ENDED), result);
 
         /* Emit a GameResultSubmitted event */
-        emit GameResultSubmitted(gameHash, vars.name, vars.fee, vars.proxyFee, vars.platformFee, vars.option1Amount, vars.option2Amount, uint(GameStatus.ENDED), vars.result);
+        emit GameResultSubmitted(gameHash, vars.name, vars.fee, vars.proxyFee, vars.platformFee, vars.wonAmount, vars.lossAmount, uint(GameStatus.ENDED), result);
+    }
+
+    struct CalculateFeeVars {
+        uint proxyId;
+        address proxyAddress;
+        uint proxyFeeRate;
+        uint proxyBetAmount;
+        uint proxyBetRatio;
+        uint proxyFeeAmount;
+        uint platformFee;
+    }
+
+    function calculateFee(bytes32 gameHash, uint fee, uint totalAmount) internal returns (uint proxyFee, uint platformFee){
+        CalculateFeeVars memory vars;
+        //Get the number of proxies who are betting users in the current game
+        uint proxyLength = _storage.getProxyVoteCount(gameHash);
+
+        for (uint256 i = 0; i < proxyLength; i++) {
+
+            //Get the proxy bet amount and proxyId
+            (vars.proxyId, vars.proxyBetAmount) = _storage.getProxyVote(gameHash, i);
+
+            //Obtain the proxy address and fee sharing ratio in the relationship
+            (, vars.proxyAddress, vars.proxyFeeRate) = IRelationship(_storage.relationship()).getProxyDetail(vars.proxyId);
+
+            //Calculate the proportion of proxy betting
+            // proxyBetRatio = proxyBetAmount / totalAmount
+            vars.proxyBetRatio = vars.proxyBetAmount.wdiv(totalAmount);
+
+            //Calculate the proxy profit sharing fee
+            //proxyFeeAmount = proxyBetRatio * fee * proxyFeeRate
+            vars.proxyFeeAmount = vars.proxyBetRatio.wmul(fee).wmul(vars.proxyFeeRate);
+
+            //Accumulated proxy fee to proxyFee
+            proxyFee = proxyFee.add(vars.proxyFeeAmount);
+
+            //Transfer the fee to the fee address of the proxy
+            //TODO if proxyFeeAmount=0 whether to send a transfer
+            doTransferOut(vars.proxyAddress, vars.proxyFeeAmount);
+        }
+
+        //Calculation platform fee
+        // platformFee = fee - totalProxyFee
+        platformFee = fee.sub(proxyFee);
+
+        //Transfer the fee to the fee address of the platform
+        //TODO if proxyFeeAmount=0 whether to send a transfer
+        doTransferOut(_storage.platformFeeDst(), platformFee);
+        return (proxyFee, platformFee);
+    }
+
+    struct LiquidateVars {
+        address voter;
+        uint amount;
     }
 
     /**
-     * @notice Calculate the fee amount charged by the final platform and proxy
-     * @param amount Total amount of losers' bets
-     * @param feeRate The game setting fee ratio
+     * @notice Liquidation betting users and winning amounts after game result submission
+     * @param gameHash The betting game hash
+     * @param result Platform and agency fees
      */
-    function calculateFee(uint amount, uint feeRate) public view returns (uint fee, uint proxyFee, uint platformFee){
-        /* Get the fee rate of fees charged by the proxy */
-        uint proxyFeeRate = _storage.proxyFeeRate();
+    function liquidate(bytes32 gameHash, uint result, uint wonCount, uint wonAmount, uint lossAmount, uint fee) internal {
+        LiquidateVars memory vars;
 
-        // fee = loseAmount * feeRate
-        fee = amount.wmul(feeRate);
+        for (uint256 i = 0; i < wonCount; i++) {
+            if (result == uint(GameResult.OPTION1)) {
 
-        // proxyFee = fee * proxyFeeRate
-        proxyFee = fee.wmul(proxyFeeRate);
+                //Get the vote winner and betting amount
+                (vars.voter, vars.amount) = _storage.getOption1(gameHash, i);
 
-        // platformFee = fee * (1-proxyFee)
-        platformFee = fee.sub(proxyFee);
+            } else if (result == uint(GameResult.OPTION2)) {
+
+                //Get the vote winner and betting amount
+                (vars.voter, vars.amount) = _storage.getOption2(gameHash, i);
+
+            } else {
+                revert("Option not in specified range");
+            }
+
+            //winner betting ratio
+            uint rate = vars.amount.wdiv(wonAmount);
+
+            //The amount the winner will share = lossAmount - lossAmount * gameFeeRate
+            uint _lossAmount = lossAmount.sub(fee);
+
+            //winner bet winning amount = winnerBettingAmount / winSideTotalBetting * (lossAmount - lossAmount * gameFeeRate)
+            uint winAmount = rate.wmul(_lossAmount).add(vars.amount);
+
+            uint balance = _storage.getBalance(gameHash, vars.voter);
+
+            uint newBalance = balance.add(winAmount);
+
+            _storage.setBalance(gameHash, vars.voter, newBalance);
+        }
     }
 
-
     struct PlayGameVars {
-        bool verify;
 
         uint name;
         uint startTime;
@@ -287,6 +368,8 @@ contract Game {
 
         uint option1Amount;
         uint option2Amount;
+
+        uint proxyId;
     }
 
     /**
@@ -295,13 +378,8 @@ contract Game {
      * @param amount Bet amount
      * @param option Bet option
      */
-    function play(bytes32 gameHash, uint amount, uint option) external {
+    function playInternal(bytes32 gameHash, uint amount, uint option) internal {
         PlayGameVars memory vars;
-
-        /* The betting player must exist in the current proxy relationship */
-        IRelationship relationship = IRelationship(_storage.relationship());
-        vars.verify = relationship.verifyAndBind(msg.sender, _storage.proxy());
-        require(vars.verify, "Check user and proxy relationship error");
 
         /* Check if game exists and game state must be in running state */
         (vars.name, vars.startTime, vars.endTime, vars.minAmount, vars.maxAmount, vars.feeRate, vars.status,) = _storage.getGame(gameHash);
@@ -339,6 +417,14 @@ contract Game {
 
         }
 
+        (vars.proxyId,,) = IRelationship(_storage.relationship()).getProxyDetail(msg.sender);
+
+        //Determine whether the user is bound to a proxy relationship
+        if (vars.proxyId > 0) {
+            /* Write the proxy user betting amount into storage */
+            _storage.setProxyUserVote(gameHash, vars.proxyId, _amount);
+        }
+
         /* Get all bet amounts of the current player */
         (vars.option1Amount, vars.option2Amount) = _storage.getPayerVote(gameHash, msg.sender);
 
@@ -350,17 +436,17 @@ contract Game {
      * @notice The user withdraws the kusd won or wagered in a game
      * @param gameHash The betting game hash
      */
-    function withdraw(bytes32 gameHash) external returns (uint amount){
+    function withdrawInternal(bytes32 gameHash) internal returns (uint amount){
 
         /* Check the amount of cash that the user can withdraw in the game */
         amount = _storage.getBalance(gameHash, msg.sender);
         require(amount > 0, "Insufficient balance");
 
-        /* Transfer to msg.sender */
-        doTransferOut(msg.sender, amount);
-
         /* Write user balance into storage */
         _storage.setBalance(gameHash, msg.sender, 0);
+
+        /* Transfer to msg.sender */
+        doTransferOut(msg.sender, amount);
 
         /* Emit a PayerVote event */
         emit Withdraw(gameHash, msg.sender, amount, 0);
@@ -399,7 +485,8 @@ contract Game {
         // Calculate the amount that was *actually* transferred
         uint balanceAfter = EIP20Interface(_storage.tokenContract()).balanceOf(address(this));
         require(balanceAfter >= balanceBefore, "Token transfer in overflow");
-        return balanceAfter - balanceBefore; // underflow already checked above, just subtract
+        return balanceAfter - balanceBefore;
+        // underflow already checked above, just subtract
     }
 
     /**

@@ -26,8 +26,8 @@ module.exports = (async () => {
     };
 
     const gameStorageTxs = new Map();
-    gameStorageTxs.set("setAdmin", PlatformGame.address);
-    gameStorageTxs.set("setProxyFeeDst", resource.PLATFORM_FEE_RECEIVING_ADDRESS);
+    // gameStorageTxs.set("setAdmin", PlatformGame.address);
+    gameStorageTxs.set("setRelationship", resource.RELATIONSHIP_CONTRACT);
     gameStorageTxs.set("setPlatformFeeDst", resource.PLATFORM_FEE_RECEIVING_ADDRESS);
 
     for (let [method, value] of gameStorageTxs.entries()) {

@@ -27,17 +27,18 @@ module.exports = async () => {
     });
     contracts.push(["GameStorage", `"${resource.explorer}/address/${gameStorage.address}"`, `"${resource.explorer}/tx/${gameStorage.transactionHash}"`]);
 
-    // const game = await deploy("Game", {
-    //     from: deployer,
-    //     args: [gameStorage.address],
-    // });
-    // contracts.push(["Game", `"${resource.explorer}/address/${game.address}"`, `"${resource.explorer}/tx/${game.transactionHash}"`]);
-
-    const platformGame = await deploy("PlatformGame", {
+    const proxyGame = await deploy("ProxyGame", {
         from: deployer,
         args: [gameStorage.address],
     });
-    contracts.push(["PlatformGame", `"${resource.explorer}/address/${platformGame.address}"`, `"${resource.explorer}/tx/${platformGame.transactionHash}"`]);
+    contracts.push(["ProxyGame", `"${resource.explorer}/address/${proxyGame.address}"`, `"${resource.explorer}/tx/${proxyGame.transactionHash}"`]);
+
+    // const platformGame = await deploy("PlatformGame", {
+    //     from: deployer,
+    //     args: [gameStorage.address],
+    // });
+    // contracts.push(["PlatformGame", `"${resource.explorer}/address/${platformGame.address}"`, `"${resource.explorer}/tx/${platformGame.transactionHash}"`]);
+
     console.log(green(table(contracts)));
 };
 

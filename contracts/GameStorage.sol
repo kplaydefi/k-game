@@ -32,16 +32,6 @@ contract GameStorage is Ownable {
     address payable internal _platformFeeDst;
 
     /*
-     * @notice Proxy fee receiving address
-     */
-    address payable internal _proxyFeeDst;
-
-    /*
-     * @notice Proxy fee rate
-     */
-    uint internal _proxyFeeRate;
-
-    /*
      * @notice Proxy address
      */
     address internal _proxy;
@@ -56,6 +46,15 @@ contract GameStorage is Ownable {
      */
     address internal _relationship;
 
+
+    //proxyFlag, amount,
+
+    struct ProxyVote {
+        uint [] proxyIds;
+        mapping(uint => uint) votes;
+    }
+
+    mapping(bytes32 => ProxyVote) internal proxyVotes;
 
 
     struct Game {
@@ -208,50 +207,6 @@ contract GameStorage is Ownable {
         return _platformFeeDst;
     }
 
-    /**
-     * @notice Set the proxy fee receiving address
-     * @param newProxyFeeDst Proxy fee address of payable
-     */
-    function setProxyFeeDst(address payable newProxyFeeDst) public onlyOwner {
-        /* Check if newProxyFeeDst  is a non-zero address */
-        require(newProxyFeeDst != address(0), "new proxy fee address is the zero address");
-
-        /* Update proxyFeeDst to new newProxyFeeDst */
-        _proxyFeeDst = newProxyFeeDst;
-
-        /* Emit an ProxyFeeDstSet event */
-        emit ProxyFeeDstSet(_proxyFeeDst, newProxyFeeDst);
-    }
-
-    /**
-     * @notice Return the proxy fee receiving address
-     */
-    function proxyFeeDst() public view returns (address){
-        return _proxyFeeDst;
-    }
-
-
-    /**
-     * @notice Set the proxy fee collection ratio
-     * @param newProxyFeeRate Proxy fee ratio
-     */
-    function setProxyFeeRate(uint newProxyFeeRate) public onlyOwner {
-        /* Check if fee rate is 0 */
-        require(newProxyFeeRate > 0, "The fee rate cannot be 0");
-
-        /* Update proxyFeeRate to new rate */
-        _proxyFeeRate = newProxyFeeRate;
-
-        /* Emit an ProxyRateSet event */
-        emit ProxyRateSet(newProxyFeeRate);
-    }
-
-    /**
-     * @notice Return the proxy fee collection ratio
-     */
-    function proxyFeeRate() public view returns (uint){
-        return _proxyFeeRate;
-    }
 
     /**
     * @notice Set the proxy address
@@ -415,21 +370,22 @@ contract GameStorage is Ownable {
     function setOption1(bytes32 gameHash, address voter, uint amount) public onlyAdmin {
         /* Update player's stake and total stake in game option 1 */
         Vote storage vote = _option1[gameHash];
-        vote.votes[voter] = vote.votes[voter].add(amount);
-        vote.voteAmount = vote.voteAmount.add(amount);
+
+        uint votedAmount = vote.votes[voter];
 
         /* Check voter is unique */
-        bool isExists = false;
-        for (uint i = 0; i < vote.voters.length; i++) {
-            if (vote.voters[i] == voter) {
-                isExists = true;
-                break;
-            }
-        }
-        if (!isExists) {
+        if (votedAmount == 0) {
             vote.voters.push(voter);
         }
 
+        vote.votes[voter] = votedAmount.add(amount);
+        vote.voteAmount = vote.voteAmount.add(amount);
+    }
+
+    function getOption1(bytes32 gameHash, uint voterIndex) public view returns (address voter, uint amount){
+        Vote storage vote = _option1[gameHash];
+        voter = vote.voters[voterIndex];
+        amount = vote.votes[voter];
     }
 
     /**
@@ -441,20 +397,22 @@ contract GameStorage is Ownable {
     function setOption2(bytes32 gameHash, address voter, uint amount) public onlyAdmin {
         /* Update player's stake and total stake in game option 2 */
         Vote storage vote = _option2[gameHash];
-        vote.votes[voter] = vote.votes[voter].add(amount);
-        vote.voteAmount = vote.voteAmount.add(amount);
 
-        //Check voter is unique
-        bool isExists = false;
-        for (uint i = 0; i < vote.voters.length; i++) {
-            if (vote.voters[i] == voter) {
-                isExists = true;
-                break;
-            }
-        }
-        if (!isExists) {
+        uint votedAmount = vote.votes[voter];
+
+        /* Check voter is unique */
+        if (votedAmount == 0) {
             vote.voters.push(voter);
         }
+
+        vote.votes[voter] = votedAmount.add(amount);
+        vote.voteAmount = vote.voteAmount.add(amount);
+    }
+
+    function getOption2(bytes32 gameHash, uint voterIndex) public view returns (address voter, uint amount){
+        Vote storage vote = _option2[gameHash];
+        voter = vote.voters[voterIndex];
+        amount = vote.votes[voter];
     }
 
     /**
@@ -472,6 +430,7 @@ contract GameStorage is Ownable {
         option2Count = option2.voters.length;
     }
 
+
     /**
      * @notice Returns the total amount bet by the user for option 1 and option 2 in the game
      * @param gameHash The betting game hash
@@ -483,6 +442,28 @@ contract GameStorage is Ownable {
 
         option1Amount = option1.votes[account];
         option2Amount = option2.votes[account];
+    }
+
+    function setProxyUserVote(bytes32 gameHash, uint proxyId, uint amount) public onlyAdmin {
+        ProxyVote storage vote = proxyVotes[gameHash];
+        uint proxyVoteAmount = vote.votes[proxyId];
+
+        /* Check proxyId is unique */
+        if (proxyVoteAmount == 0) {
+            vote.proxyIds.push(proxyId);
+        }
+        vote.votes[proxyId] = proxyVoteAmount.add(amount);
+    }
+
+    function getProxyVote(bytes32 gameHash, uint proxyIndex) public view returns (uint proxyId, uint amount){
+        ProxyVote storage vote = proxyVotes[gameHash];
+        proxyId = vote.proxyIds[proxyIndex];
+        amount = vote.votes[proxyId];
+    }
+
+    function getProxyVoteCount(bytes32 gameHash) public view returns (uint length){
+        ProxyVote storage vote = proxyVotes[gameHash];
+        return vote.proxyIds.length;
     }
 
     /**
@@ -504,93 +485,4 @@ contract GameStorage is Ownable {
         return _balances[gameHash][account];
     }
 
-    /**
-     * @notice Liquidation of Option 1 betting users and winning amounts after game result submission
-     * @param gameHash The betting game hash
-     * @param fee Platform and agency fees
-     */
-    function liquidateOption1(bytes32 gameHash, uint fee) public onlyAdmin {
-
-        Vote storage vote = _option1[gameHash];
-
-        (uint option1Amount, uint option2Amount,,) = getGameVote(gameHash);
-
-        for (uint256 i = 0; i < vote.voters.length; i++) {
-            //Get the vote winner
-            address voter = vote.voters[i];
-
-            //Get the investment amount of the bet winner
-            uint voteAmount = vote.votes[voter];
-
-            uint rate = voteAmount.wdiv(option1Amount);
-
-            uint loseTotalAmount = option2Amount.sub(fee);
-
-            uint winAmount = rate.wmul(loseTotalAmount).add(voteAmount);
-
-            uint balance = getBalance(gameHash, voter);
-
-            uint newBalance = balance.add(winAmount);
-
-            setBalance(gameHash, voter, newBalance);
-        }
-    }
-
-    /**
-     * @notice Liquidation of Option 2 betting users and winning amounts after game result submission
-     * @param gameHash The betting game hash
-     * @param fee Platform and agency fees
-     */
-    function liquidateOption2(bytes32 gameHash, uint fee) public onlyAdmin {
-        Vote storage vote = _option2[gameHash];
-
-        (uint option1Amount, uint option2Amount,,) = getGameVote(gameHash);
-
-        for (uint256 i = 0; i < vote.voters.length; i++) {
-            //Get the vote winner
-            address voter = vote.voters[i];
-
-            //Get the investment amount of the bet winner
-            uint voteAmount = vote.votes[voter];
-
-            uint rate = voteAmount.wdiv(option2Amount);
-
-            uint loseTotalAmount = option1Amount.sub(fee);
-
-            uint winAmount = rate.wmul(loseTotalAmount).add(voteAmount);
-
-            uint balance = getBalance(gameHash, voter);
-
-            uint newBalance = balance.add(winAmount);
-
-            setBalance(gameHash, voter, newBalance);
-        }
-    }
-
-    /**
-     * @notice Cancel games and liquidate user bets
-     * @param gameHash The betting game hash
-     */
-    function cancel(bytes32 gameHash) public onlyAdmin {
-        Vote storage vote1 = _option1[gameHash];
-
-        // liquidate option1
-        for (uint256 i = 0; i < vote1.voters.length; i++) {
-            address voter = vote1.voters[i];
-            uint voteAmount = vote1.votes[voter];
-            uint balance = getBalance(gameHash, voter);
-            uint newBalance = balance.add(voteAmount);
-            setBalance(gameHash, voter, newBalance);
-        }
-
-        // liquidate option2
-        Vote storage vote2 = _option2[gameHash];
-        for (uint256 i = 0; i < vote2.voters.length; i++) {
-            address voter = vote2.voters[i];
-            uint voteAmount = vote2.votes[voter];
-            uint balance = getBalance(gameHash, voter);
-            uint newBalance = balance.add(voteAmount);
-            setBalance(gameHash, voter, newBalance);
-        }
-    }
 }

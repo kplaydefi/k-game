@@ -29,5 +29,6 @@ Polygon Test Network
 
 | Contract | Address |
 | --- | --- |
-| GameStorage | [0x9Ef7B986B8FcedA5A63C02b0E66CAe94466E28B8](https://mumbai.polygonscan.com/address/0x9Ef7B986B8FcedA5A63C02b0E66CAe94466E28B8) |
-| Game | [0xeC2A8EFD3AD86be7F3036602Fd174BAD7d1Cb2Af](https://mumbai.polygonscan.com/address/0xeC2A8EFD3AD86be7F3036602Fd174BAD7d1Cb2Af) |
+| GameStorage | [0x88EEFb0D35F8b0e76D3B01F4a76c681c8F7F4EF0](https://mumbai.polygonscan.com/address/0x88EEFb0D35F8b0e76D3B01F4a76c681c8F7F4EF0) |
+| ProxyGame | [0x60612F8f600e1dA23917BB1AA674bb9c6fd1306a](https://mumbai.polygonscan.com/address/0x60612F8f600e1dA23917BB1AA674bb9c6fd1306a) |
+| PlatformGame | [0x7B7e79ae453d71F541b0f1BdE7e8B9f6dd74A132](https://mumbai.polygonscan.com/address/0x7B7e79ae453d71F541b0f1BdE7e8B9f6dd74A132) |
