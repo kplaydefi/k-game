@@ -2,12 +2,32 @@
   "development": {
     "explorer": ""
   },
-  "polygonTestNet": {
+  "mumbai": {
+    "provider": "https://polygon-mumbai.g.alchemy.com/v2/us5J6Fe3MuDLSoqxgp_vrv85e6BUV3mc",
     "explorer": "https://mumbai.polygonscan.com",
+
     "TOKEN_CONTRACT": "0xF76f04B07f24b363D28bE7a51bF8D1a242bE387F",
     "RELATIONSHIP_CONTRACT": "0xF8A017898061A3172f2eC3B583cb381aC12dd111",
     "PROXY_FEE_CONTRACT": "0x87Ae5F972e486cE3cEccaEBf599eDFA277949e96",
     "PROXY_ADDRESS": "0x1d6bc6401285e383b3a3d370f5b803165c93cf65",
-    "PLATFORM_FEE_RECEIVING_ADDRESS": "0xf3eBFEacd83133295DBDBd6126E639eF5D4B8359"
+    "PLATFORM_FEE_RECEIVING_ADDRESS": "0xf3eBFEacd83133295DBDBd6126E639eF5D4B8359",
+
+    "platform": {
+      "owner": "0x831a88dc832d0C4B2523e84a6C9705113800819E",
+      "storage": "0x11F631c4716307d47e547641FbEb1859540Dd611",
+      "game": "0x7B7e79ae453d71F541b0f1BdE7e8B9f6dd74A132"
+    },
+    "uat1": {
+      "owner": "0xb069Ed7af527F694D266F350C6C154EEd7E20ef5",
+      "proxy": "0x111d1e702fb95b9b26170e71efa06191be4d5e0d",
+      "storage": "0x88EEFb0D35F8b0e76D3B01F4a76c681c8F7F4EF0",
+      "game": "0x60612F8f600e1dA23917BB1AA674bb9c6fd1306a"
+    },
+    "uat2": {
+      "owner": "0xb069Ed7af527F694D266F350C6C154EEd7E20ef5",
+      "proxy": "0x1d6bc6401285e383b3a3d370f5b803165c93cf65",
+      "storage": "0x192b314B62471C3e37939FEC887bF9D3BFc2fb7A",
+      "game": "0xC362952594e45BAFdc2f81E952c0Fe06BDfB785c"
+    }
   }
 }

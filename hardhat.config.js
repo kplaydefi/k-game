@@ -3,9 +3,10 @@ require("@nomiclabs/hardhat-ethers");
 
 
 module.exports = {
-    defaultNetwork: "polygonTestNet",
+    defaultNetwork: "mumbai",
     networks:       {
-        polygonTestNet: {
+        //polygon mumbai Testnet
+        mumbai: {
             url:      "https://polygon-mumbai.g.alchemy.com/v2/us5J6Fe3MuDLSoqxgp_vrv85e6BUV3mc",
             accounts: [process.env["DEPLOYER_PRIVATE_KEY"]],
             saveDeployments: true,

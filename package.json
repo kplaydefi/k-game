@@ -25,15 +25,18 @@
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "npm:hardhat-deploy-ethers@^0.3.0-beta.13",
     "@nomiclabs/hardhat-waffle": "^2.0.3",
+    "biguint-format": "^1.0.2",
     "chai": "^4.3.6",
     "chai-ethers": "0.0.1",
     "chalk": "^4.1.1",
     "ethereum-waffle": "^3.4.4",
     "ethers": "^5.6.4",
+    "flake-idgen": "^1.4.0",
     "hardhat": "^2.9.3",
     "hardhat-deploy": "^0.11.4",
     "kofo-wallet": "^1.2.5",
     "lodash": "^4.17.21",
+    "moment": "^2.29.3",
     "table": "^6.8.0",
     "web3": "^1.7.3"
   }
