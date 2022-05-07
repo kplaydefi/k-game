@@ -33,6 +33,8 @@
     "hardhat": "^2.9.3",
     "hardhat-deploy": "^0.11.4",
     "kofo-wallet": "^1.2.5",
-    "table": "^6.8.0"
+    "lodash": "^4.17.21",
+    "table": "^6.8.0",
+    "web3": "^1.7.3"
   }
 }

@@ -2,8 +2,9 @@
 pragma solidity >=0.5.16 <0.9.0;
 
 import "./Game.sol";
+import "./Ownable.sol";
 
-contract PlatformGame is Game {
+contract PlatformGame is Ownable, Game {
 
     constructor(address storage_) Game(storage_){}
 

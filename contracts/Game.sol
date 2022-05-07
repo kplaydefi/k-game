@@ -6,9 +6,8 @@ import "./EIP20NonStandardInterface.sol";
 import "./EIP20Interface.sol";
 import "./IGameStorage.sol";
 import "./IRelationship.sol";
-import "./Ownable.sol";
 
-contract Game is Ownable{
+contract Game {
     using SafeMath for uint256;
 
     /**
@@ -59,12 +58,6 @@ contract Game is Ownable{
      * @notice Event emitted when player cash out after game
      */
     event Withdraw(bytes32 gameHash, address account, uint amount, uint balance);
-
-
-    modifier isProxy(){
-        require(msg.sender == _storage.proxy(), "caller is not the proxy");
-        _;
-    }
 
     /**
      * @notice Game constructor
@@ -305,7 +298,7 @@ contract Game is Ownable{
         platformFee = fee.sub(proxyFee);
 
         //Transfer the fee to the fee address of the platform
-        //TODO if proxyFeeAmount=0 whether to send a transfer
+        //TODO if platformFee=0 whether to send a transfer
         doTransferOut(_storage.platformFeeDst(), platformFee);
         return (proxyFee, platformFee);
     }

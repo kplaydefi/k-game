@@ -8,6 +8,11 @@ contract ProxyGame is Game {
 
     constructor(address storage_) Game(storage_){}
 
+    modifier isProxy(){
+        require(msg.sender == _storage.proxy(), "caller is not the proxy");
+        _;
+    }
+
     function newGame(uint name, uint startTime, uint endTime, uint minAmount, uint maxAmount, uint feeRate) external isProxy returns (bytes32){
         bytes32 gameHash = newGameInternal(name, startTime, endTime, minAmount, maxAmount, feeRate);
 

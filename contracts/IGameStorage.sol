@@ -56,7 +56,7 @@ interface IGameStorage {
     function getGame(bytes32 gameHash) external view returns (uint name, uint startTime, uint endTime, uint minAmount, uint maxAmount, uint chargeRate, uint status, uint result);
 
     /**
-     * @notice Get game hash games array index
+     * @notice Get game hash by games array index
      */
     function getGameHash(uint index) external view returns (bytes32 gameHash);
 
@@ -76,7 +76,7 @@ interface IGameStorage {
     function setProxyUserVote(bytes32 gameHash, uint proxyId, uint amount) external;
 
     /**
-     * @notice Get the bet amount and the proxy id in the proxy according to the gameHash and agent index
+     * @notice Get the bet amount and the proxy id in the proxy according to the gameHash and proxy index
      */
     function getProxyVote(bytes32 gameHash, uint proxyIndex) external view returns (uint proxyId, uint amount);
 
@@ -111,7 +111,7 @@ interface IGameStorage {
     function getGameVote(bytes32 gameHash) external view returns (uint option1Amount, uint option2Amount, uint option1Count, uint option2Count);
 
     /**
-     * @notice Returns the number of bets placed by the user in the game
+     * @notice Returns the amount of bets placed by the user in the game
      */
     function getPayerVote(bytes32 gameHash, address account) external view returns (uint option1Amount, uint option2Amount);
 
